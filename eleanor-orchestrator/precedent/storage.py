@@ -1,14 +1,10 @@
 import json
-import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
 class PrecedentStorage:
-    """
-    Simplified JSON-based precedent storage.
-    Will be replaced with PostgreSQL in Step 3.
-    """
+    """Simplified JSON-based precedent storage."""
     
     def __init__(self, storage_dir: str = "data/precedents"):
         self.storage_dir = Path(storage_dir)
@@ -17,7 +13,6 @@ class PrecedentStorage:
         self._load_index()
     
     def _load_index(self):
-        """Load the precedent index"""
         if self.index_file.exists():
             with open(self.index_file, 'r') as f:
                 self.index = json.load(f)
@@ -25,7 +20,6 @@ class PrecedentStorage:
             self.index = {"precedents": [], "next_id": 1}
     
     def _save_index(self):
-        """Save the precedent index"""
         with open(self.index_file, 'w') as f:
             json.dump(self.index, f, indent=2)
     
@@ -36,10 +30,6 @@ class PrecedentStorage:
         critics: Dict,
         tags: Optional[List[str]] = None
     ) -> int:
-        """
-        Insert a new precedent into storage.
-        Returns the precedent ID.
-        """
         precedent_id = self.index["next_id"]
         timestamp = datetime.utcnow().isoformat()
         
@@ -53,12 +43,10 @@ class PrecedentStorage:
             "citation": f"ELEANOR-{precedent_id:04d}"
         }
         
-        # Save precedent to individual file
         filename = self.storage_dir / f"precedent_{precedent_id:04d}.json"
         with open(filename, 'w') as f:
             json.dump(precedent, f, indent=2)
         
-        # Update index
         self.index["precedents"].append({
             "id": precedent_id,
             "timestamp": timestamp,
@@ -71,7 +59,6 @@ class PrecedentStorage:
         return precedent_id
     
     def get_precedent(self, precedent_id: int) -> Optional[Dict]:
-        """Retrieve a specific precedent by ID"""
         filename = self.storage_dir / f"precedent_{precedent_id:04d}.json"
         if filename.exists():
             with open(filename, 'r') as f:
@@ -79,7 +66,6 @@ class PrecedentStorage:
         return None
     
     def get_all_precedents(self) -> List[Dict]:
-        """Retrieve all precedents (for search)"""
         precedents = []
         for entry in self.index["precedents"]:
             prec = self.get_precedent(entry["id"])
@@ -88,5 +74,4 @@ class PrecedentStorage:
         return precedents
     
     def count(self) -> int:
-        """Return total number of precedents"""
         return len(self.index["precedents"])
